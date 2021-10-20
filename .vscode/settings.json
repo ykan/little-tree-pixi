@@ -1,0 +1,28 @@
+{
+  // 1. 将 prettier 设置为默认的格式化工具
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": false,
+  "[javascript]": {
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.formatOnSave": true
+  },
+  "[javascriptreact]": {
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.formatOnSave": true
+  },
+  // 3. 设置保存时额外的操作，如 eslint、stylelint fix，import 优化
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true // 1.31 新增 source.fixAll
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

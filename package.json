@@ -1,0 +1,65 @@
+{
+  "name": "robot-img",
+  "version": "1.0.0",
+  "description": "robot-img",
+  "private": true,
+  "workspaces": [
+    "packages/react-img",
+    "packages/utils"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "commit": "git add . && cz",
+    "clean": "rimraf packages/**/dist docs/_site docs/*.html",
+    "test": "BABEL_ENV=test jest --detectOpenHandles --forceExit --verbose --coverage",
+    "test:last": "BABEL_ENV=test jest --detectOpenHandles --forceExit --verbose --coverage --changedSince origin/main",
+    "test:clear": "BABEL_ENV=test jest --clearCache",
+    "test:debug": "BABEL_ENV=test node --inspect-brk node_modules/.bin/jest --runInBand packages/react-img/src/useImg.test.tsx",
+    "test:watch": "BABEL_ENV=test jest --watch --verbose --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ykan/little-tree-pixi.git"
+  },
+  "author": "ykan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ykan/robot-img/issues"
+  },
+  "homepage": "https://github.com/ykan/robot-img#readme",
+  "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/plugin-transform-runtime": "^7.14.5",
+    "@babel/preset-env": "^7.14.7",
+    "@babel/preset-typescript": "^7.14.5",
+    "@types/fs-extra": "^9.0.12",
+    "@types/jest": "^26.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
+    "babel-jest": "^27.0.6",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "chokidar": "^3.5.2",
+    "commitizen": "^4.2.4",
+    "eslint": "^7.29.0",
+    "eslint-config-alloy": "^4.1.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jest": "^24.3.6",
+    "fs-extra": "^10.0.0",
+    "husky": "^7.0.1",
+    "jest": "^27.0.6",
+    "lint-staged": "^11.1.1",
+    "prettier": "2.3.2",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.3.4",
+    "vite": "^2.4.3"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./scripts/cz.js"
+    }
+  },
+  "dependencies": {
+    "normalize.css": "^8.0.1",
+    "pixi.js": "^6.1.3"
+  }
+}
