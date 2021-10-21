@@ -114,3 +114,4 @@ docs/*.html
 packages/*/types
 *.tsbuildinfo
 .rollup.cache
+*.mov
