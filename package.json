@@ -1,12 +1,7 @@
 {
-  "name": "robot-img",
+  "name": "little-tree-pixi",
   "version": "1.0.0",
-  "description": "robot-img",
-  "private": true,
-  "workspaces": [
-    "packages/react-img",
-    "packages/utils"
-  ],
+  "description": "little-tree-pixi",
   "scripts": {
     "dev": "vite",
     "commit": "git add . && cz",
@@ -59,6 +54,8 @@
     }
   },
   "dependencies": {
+    "@types/heap": "^0.2.28",
+    "heap": "^0.2.6",
     "normalize.css": "^8.0.1",
     "pixi.js": "^6.1.3"
   }
