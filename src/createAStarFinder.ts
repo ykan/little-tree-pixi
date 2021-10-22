@@ -160,8 +160,7 @@ export function createAStarFinder(opts: AStarFinderOptions = {}) {
 
           // get the distance between current node and the neighbor
           // and calculate the next g score
-          const ng =
-            node.g + (neighbor.x - node.x === 0 || neighbor.y - node.y === 0 ? 1 : Math.SQRT2)
+          const ng = node.g + 1
 
           // check if the neighbor has not been inspected yet, or
           // can be reached with smaller cost from the current node
