@@ -1,3 +1,4 @@
+import { ease } from 'pixi-ease';
 import { Application, LoaderResource, Text, TextStyle, utils } from 'pixi.js';
 
 export function createEntryScene(app: Application) {
@@ -9,7 +10,6 @@ export function createEntryScene(app: Application) {
     })
 
   const style = new TextStyle({
-    fontFamily: 'Arial',
     fontSize: 100,
     fontStyle: 'italic',
     fontWeight: 'bold',
@@ -35,26 +35,18 @@ export function createEntryScene(app: Application) {
       await loadAssets()
       startButton.x = (app.view.width - startButton.width) / 2
       startButton.y = (app.view.height - startButton.height) / 2
-      startButton.alpha = 0.5
       startButton.interactive = true
-      let alphaDelta = -0.008
-      let animationId = -1
-
-      function animationFrame() {
-        startButton.alpha += alphaDelta
-        if (startButton.alpha < 0.5 || startButton.alpha >= 1) {
-          alphaDelta = -alphaDelta
-        }
-        animationId = requestAnimationFrame(animationFrame)
-      }
+      ease.add(
+        startButton,
+        { alpha: 0.5, y: startButton.y - 10, x: startButton.x + 5 },
+        { repeat: true, duration: 1500, ease: 'easeInOutQuad', reverse: true }
+      )
 
       startButton.once('pointertap', () => {
         app.stage.removeChild(startButton)
-        cancelAnimationFrame(animationId)
       })
 
       app.stage.addChild(startButton)
-      animationFrame()
     },
   }
 }
