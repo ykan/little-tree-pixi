@@ -2,7 +2,8 @@ import './main.css';
 
 import { Application } from 'pixi.js';
 
-import { createEntryScene } from './scenes/createEntryScene';
+import { createEntryScene } from './createEntryScene';
+import { createMainScene } from './createMainScene';
 
 async function main() {
   const app = new Application({
@@ -13,7 +14,10 @@ async function main() {
   })
   document.body.appendChild(app.view)
   const entryScene = createEntryScene(app)
-  await entryScene.enterLoadingView()
+  const mainScene = createMainScene(app)
+  entryScene.enterLoadingView(() => {
+    mainScene.startGame()
+  })
 }
 
 main()

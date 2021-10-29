@@ -29,8 +29,16 @@ export function createEntryScene(app: Application) {
   const startButton = new Text('Start Game', style)
 
   return {
-    async enterLoadingView() {
+    async enterLoadingView(onStart?: () => void) {
       app.loader.add('logo', 'assets/logo.png')
+      app.loader.add('map', 'assets/map.png')
+      // tree
+      app.loader.add('1-green', 'assets/1-green.png')
+      app.loader.add('1-blue', 'assets/1-blue.png')
+      app.loader.add('1-yellow', 'assets/1-yellow.png')
+      app.loader.add('1-purple', 'assets/1-purple.png')
+      app.loader.add('2-red', 'assets/2-red.png')
+      app.loader.add('2-black', 'assets/2-black.png')
       // @TODO 设置 Loading 界面
       await loadAssets()
       startButton.x = (app.view.width - startButton.width) / 2
@@ -41,12 +49,16 @@ export function createEntryScene(app: Application) {
         { alpha: 0.5, y: startButton.y - 10, x: startButton.x + 5 },
         { repeat: true, duration: 1500, ease: 'easeInOutQuad', reverse: true }
       )
-
-      startButton.once('pointertap', () => {
+      const next = () => {
+        ease.removeEase(startButton)
         app.stage.removeChild(startButton)
-      })
+        onStart?.()
+      }
+
+      startButton.once('pointertap', next)
 
       app.stage.addChild(startButton)
+      next()
     },
   }
 }
