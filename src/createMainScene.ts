@@ -1,26 +1,11 @@
-import { Application, Graphics, Point, Sprite, TilingSprite } from 'pixi.js';
+import { Application, Point, Sprite, TilingSprite } from 'pixi.js';
 
 import { createGrid } from './createGrid';
+import { createTreeMap } from './createTreeMap';
+import { waitTime } from './utils';
 
-type TreeType = '1-green' | '1-blue' | '1-purple' | '1-yellow' | '2-red' | '2-black'
+import type { TreeType, Tree } from './types'
 type GameStatus = 'play' | 'moving'
-
-interface Tree {
-  startMove: () => void
-  endMove: () => void
-  moveTo: (x: number, y: number) => void
-
-  readonly view: Sprite
-  readonly type: TreeType
-  readonly gridX: number
-  readonly gridY: number
-}
-
-function waitTime(time: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, time)
-  })
-}
 
 export function createMainScene(app: Application) {
   // 一些常量
@@ -37,6 +22,7 @@ export function createMainScene(app: Application) {
 
   // 全局网格
   const grid = createGrid(rowNum, rowNum)
+  const treeMap = createTreeMap()
   let gameStatus: GameStatus = 'play'
   let startX = -1
   let startY = -1
@@ -85,6 +71,7 @@ export function createMainScene(app: Application) {
         return gridY
       },
     }
+    treeMap.push(instance)
     view.on('pointertap', () => {
       if (gameStatus !== 'play') {
         return
@@ -104,6 +91,7 @@ export function createMainScene(app: Application) {
     return instance
   }
 
+  // 分阶段产生不同类型的 tree
   const level1RandomTreeTypes: TreeType[] = ['1-green', '1-blue', '1-purple', '1-yellow']
   const level2RandomTreeTypes: TreeType[] = [
     '1-green',
@@ -135,24 +123,6 @@ export function createMainScene(app: Application) {
       i--
     }
   }
-
-  // function testGrid() {
-  //   for (let i = 0; i < rowNum; i++) {
-  //     for (let j = 0; j < rowNum; j++) {
-  //       const n = grid.getNodeAt(i, j)
-  //       if (n?.walkable) {
-  //         const g = new Graphics()
-  //         g.beginFill(0x999999)
-  //         g.lineStyle(2, 0xfeeb77, 1)
-  //         g.drawRect(0, 0, blockSize, blockSize)
-  //         g.x = i * blockSize
-  //         g.y = j * blockSize
-  //         map.addChild(g)
-  //       }
-  //     }
-  //   }
-  // }
-  // ;(window as any)._test = testGrid
 
   function startGame() {
     const mapBgTexture = app.loader.resources['map']?.texture
