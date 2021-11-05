@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "commit": "git add . && cz",
+    "build": "tsc --sourceMap false",
     "clean": "rimraf packages/**/dist docs/_site docs/*.html",
     "test": "BABEL_ENV=test jest --detectOpenHandles --forceExit --verbose --coverage",
     "test:last": "BABEL_ENV=test jest --detectOpenHandles --forceExit --verbose --coverage --changedSince origin/main",

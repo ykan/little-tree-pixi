@@ -5,6 +5,7 @@ export interface Tree {
   startMove: () => void
   endMove: () => void
   moveTo: (x: number, y: number) => void
+  remove: () => Promise<void>
 
   readonly view: Sprite
   readonly type: TreeType

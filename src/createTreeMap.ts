@@ -72,26 +72,12 @@ export function getSameLineTree<T extends BaseTree = BaseTree>(
   return maxSizeLine
 }
 
-export function getUniquePoints(points: [number, number][]) {
-  const map: Record<string, boolean> = {}
-  const newPoints: [number, number][] = []
-  points.forEach((p) => {
-    const pKey = `${p[0]},${p[1]}`
-    if (map[pKey]) {
-      return
-    }
-    map[pKey] = true
-    newPoints.push(p)
-  })
-  return newPoints
-}
-
 export function createTreeMap<T extends BaseTree = BaseTree>(treeLimitNum = 4, rowNum = 8) {
   const innerTreeMap: Record<string, T[]> = {}
   const instance = {
     push(tree: T) {
       if (!innerTreeMap[tree.type]) {
-        innerTreeMap[tree.type] = []
+        innerTreeMap[tree.type] = [tree]
       } else {
         innerTreeMap[tree.type].push(tree)
       }
@@ -123,8 +109,9 @@ export function createTreeMap<T extends BaseTree = BaseTree>(treeLimitNum = 4, r
     },
     check(checkMap: CheckMap) {
       const types = Object.keys(checkMap)
-      const result: [number, number][] = []
+      const removeMap: Record<string, T[]> = {}
       types.forEach((treeType) => {
+        const result: [number, number][] = []
         const rows = checkMap[treeType]
         const trees = innerTreeMap[treeType]
         if (trees.length < treeLimitNum) {
@@ -132,11 +119,25 @@ export function createTreeMap<T extends BaseTree = BaseTree>(treeLimitNum = 4, r
         }
         rows.forEach((row) => {
           const maxLine = getSameLineTree(row, trees)
+          console.log(treeType, maxLine)
           if (maxLine.length >= treeLimitNum) {
             result.push(...maxLine)
           }
         })
+        const newTrees: T[] = []
+        const removeTrees: T[] = []
+        trees.forEach((tree) => {
+          const treePoint: [number, number] = [tree.gridX, tree.gridY]
+          if (pointInclude(treePoint, result)) {
+            removeTrees.push(tree)
+          } else {
+            newTrees.push(tree)
+          }
+        })
+        innerTreeMap[treeType] = newTrees
+        removeMap[treeType] = removeTrees
       })
+      return removeMap
     },
   }
 

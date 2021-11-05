@@ -1,4 +1,4 @@
-import { Application, Point, Sprite, TilingSprite } from 'pixi.js';
+import { Application, Point, Sprite, Text, TilingSprite } from 'pixi.js';
 
 import { createGrid } from './createGrid';
 import { createTreeMap } from './createTreeMap';
@@ -20,9 +20,17 @@ export function createMainScene(app: Application) {
   map.x = mapX
   map.y = mapY
 
+  const scoreView = new Text('Score:0', {
+    fontSize: 60,
+    fill: ['#ffffff', '#00ff00'],
+  })
+  let totalScore = 0
+  scoreView.x = mapX
+  scoreView.y = 100
+
   // 全局网格
   const grid = createGrid(rowNum, rowNum)
-  const treeMap = createTreeMap()
+  const treeMap = createTreeMap<Tree>()
   let gameStatus: GameStatus = 'play'
   let startX = -1
   let startY = -1
@@ -57,6 +65,10 @@ export function createMainScene(app: Application) {
         view.x = x * blockSize + xDelta
         view.y = y * blockSize + yDelta
         grid.setWalkable(x, y, false)
+      },
+      async remove() {
+        grid.setWalkable(gridX, gridY)
+        map.removeChild(view)
       },
       get type() {
         return type
@@ -101,8 +113,10 @@ export function createMainScene(app: Application) {
     '2-red',
     '2-black',
   ]
-  function randomAddTrees(level: 1 | 2) {
+  function randomAddTrees(level: 1 | 2, num?: number) {
     const treeTypes = level === 1 ? level1RandomTreeTypes : level2RandomTreeTypes
+    const defaultGenerateNum = level === 1 ? 2 : 3
+    const generateNum = num || defaultGenerateNum
     let walkableNodes = grid.getWalkableNodes()
     if (walkableNodes.length === 0) {
       return
@@ -113,15 +127,35 @@ export function createMainScene(app: Application) {
       walkableNodes = walkableNodes.filter((n) => n !== result)
       return result
     }
-    let i = walkableNodes.length > 4 ? 4 : walkableNodes.length
+    let i = walkableNodes.length > generateNum ? generateNum : walkableNodes.length
+    const trees: Tree[] = []
     while (i > 0) {
       const [x, y] = randomPop()
       const treeType = treeTypes[(Math.random() * treeTypes.length) >> 0]
       const tree = createTree(treeType)
       tree.moveTo(x, y)
       map.addChild(tree.view)
+      trees.push(tree)
       i--
     }
+    return trees
+  }
+
+  async function checkTrees(trees: Tree[]) {
+    const checkMap = treeMap.getCheckMap(trees)
+    const removeMap = treeMap.check(checkMap)
+    const removeTypes = Object.keys(removeMap)
+    console.log(`check trees`, trees.length)
+    console.log(`result`, removeMap)
+    for (const removeType of removeTypes) {
+      const removeTrees = removeMap[removeType]
+      console.log('removeTrees.length', removeTrees.length)
+      for (const tree of removeTrees) {
+        await tree.remove()
+      }
+      totalScore += removeTrees.length
+    }
+    scoreView.text = `Score:${totalScore}`
   }
 
   function startGame() {
@@ -131,6 +165,7 @@ export function createMainScene(app: Application) {
     mapBg.interactive = true
     map.addChild(mapBg)
     app.stage.addChild(map)
+    app.stage.addChild(scoreView)
 
     mapBg.on('pointertap', async (e) => {
       if (gameStatus !== 'play' || !lastTree) {
@@ -157,14 +192,28 @@ export function createMainScene(app: Application) {
         await waitTime(300)
       }
       lastTree.endMove()
+      const trees = [lastTree]
       lastTree = undefined
+      await checkTrees(trees)
+      await waitTime(300)
 
-      randomAddTrees(1)
+      let nextLevel: 1 | 2 = 1
+      let nextGenerateNum = 2
+      if (totalScore > 40) {
+        nextGenerateNum = 3
+      }
+      if (totalScore > 70) {
+        nextLevel = 2
+      }
+      const newTrees = randomAddTrees(nextLevel, nextGenerateNum)
+      if (newTrees?.length) {
+        await checkTrees(newTrees)
+      }
       gameStatus = 'play'
       // console.log('steps', steps)
     })
 
-    randomAddTrees(1)
+    randomAddTrees(1, 4)
   }
   return {
     startGame,

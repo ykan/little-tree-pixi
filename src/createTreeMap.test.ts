@@ -1,21 +1,8 @@
-import { createTreeMap, getPositions, getSameLineTree, getUniquePoints } from './createTreeMap';
+import { createTreeMap, getPositions, getSameLineTree } from './createTreeMap';
 
 describe('getPositinos', () => {
   test('8x8', () => {
     const result = getPositions(0, 0, 8)
-    // console.log(result)
-  })
-})
-
-describe('getUniquePoints', () => {
-  test('getUniquePoints', () => {
-    const result = getUniquePoints([
-      [1, 1],
-      [1, 1],
-      [1, 1],
-      [1, 1],
-    ])
-    expect(result).toEqual([[1, 1]])
     // console.log(result)
   })
 })
