@@ -1,3 +1,4 @@
+import { ease } from 'pixi-ease';
 import { Application, Point, Sprite, Text, TilingSprite } from 'pixi.js';
 
 import { createGrid } from './createGrid';
@@ -69,6 +70,15 @@ export function createMainScene(app: Application) {
       async remove() {
         grid.setWalkable(gridX, gridY)
         map.removeChild(view)
+      },
+      async shake() {
+        ease.add(
+          view,
+          { rotation: -Math.PI / 12 },
+          { repeat: true, duration: 50, ease: 'easeInOutQuad', reverse: true }
+        )
+        await waitTime(500)
+        ease.removeEase(view)
       },
       get type() {
         return type
@@ -155,7 +165,7 @@ export function createMainScene(app: Application) {
       }
       totalScore += removeTrees.length
     }
-    scoreView.text = `Score:${totalScore}`
+    scoreView.text = `Score:${totalScore * 10}`
   }
 
   function startGame() {
@@ -181,15 +191,20 @@ export function createMainScene(app: Application) {
         endX,
         endY,
       })
+
+      gameStatus = 'moving'
       if (steps.length === 0) {
-        console.log('没有路径')
+        await lastTree.shake()
+        lastTree.endMove()
+        lastTree = undefined
+        gameStatus = 'play'
         return
       }
-      gameStatus = 'moving'
+      const moveSpeed = Math.min(2400 / steps.length, 300)
       for (const step of steps) {
         const [x, y] = step
         lastTree.moveTo(x, y)
-        await waitTime(300)
+        await waitTime(moveSpeed)
       }
       lastTree.endMove()
       const trees = [lastTree]
@@ -206,6 +221,7 @@ export function createMainScene(app: Application) {
         nextLevel = 2
       }
       const newTrees = randomAddTrees(nextLevel, nextGenerateNum)
+      await waitTime(600)
       if (newTrees?.length) {
         await checkTrees(newTrees)
       }
