@@ -1,7 +1,9 @@
 import './heapDemo.css';
 
 import { ease } from 'pixi-ease';
-import { Application, filters, Graphics, Sprite, Text } from 'pixi.js';
+import { Application, Graphics, Sprite, Text } from 'pixi.js';
+
+import { createButton } from './createButton';
 
 interface NodeOption {
   level: number
@@ -55,7 +57,7 @@ async function main() {
       },
       moveTo(x: number, y: number) {
         return new Promise<void>((resolve) => {
-          renderBg(0x999999)
+          renderBg(0xdddddd)
           const animation = ease.add(
             view,
             {
@@ -188,8 +190,16 @@ async function main() {
     }
   }
 
+  const btn = createButton({
+    text: 'heapify',
+  })
+  btn.view.x = app.view.width / 3
+  btn.view.y = app.view.height - 100
+
+  app.stage.addChild(btn.view)
+
   let isRunning = false
-  app.stage.on('pointertap', async () => {
+  btn.view.on('pointertap', async () => {
     if (isRunning) {
       return
     }
