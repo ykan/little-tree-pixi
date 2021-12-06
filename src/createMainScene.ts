@@ -15,6 +15,7 @@ export function createMainScene(app: Application) {
   const mapSize = app.view.width - mapX * 2
   const rowNum = 8
   const blockSize = (mapSize / rowNum) >> 0
+  const ratio = window.devicePixelRatio || 1
 
   // 全局地图
   const map = new Sprite()
@@ -22,7 +23,7 @@ export function createMainScene(app: Application) {
   map.y = mapY
 
   const scoreView = new Text('Score:0', {
-    fontSize: 60,
+    fontSize: 60 * ratio,
     fill: ['#ffffff', '#00ff00'],
   })
   let totalScore = 0

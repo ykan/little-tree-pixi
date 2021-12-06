@@ -4,9 +4,13 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   base: './',
   build: {
-    target: 'esnext',
-    // minify: false,
-    polyfillModulePreload: false,
+    assetsDir: 'js_css',
+    rollupOptions: {
+      input: {
+        main: './index.html',
+        heapDemo: '/heap-demo.html',
+      },
+    },
   },
   // server: {
   //   hmr: false,
