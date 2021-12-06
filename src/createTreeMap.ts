@@ -73,7 +73,7 @@ export function getSameLineTree<T extends BaseTree = BaseTree>(
 }
 
 export function createTreeMap<T extends BaseTree = BaseTree>(treeLimitNum = 4, rowNum = 8) {
-  const innerTreeMap: Record<string, T[]> = {}
+  let innerTreeMap: Record<string, T[]> = {}
   const instance = {
     push(tree: T) {
       if (!innerTreeMap[tree.type]) {
@@ -81,6 +81,17 @@ export function createTreeMap<T extends BaseTree = BaseTree>(treeLimitNum = 4, r
       } else {
         innerTreeMap[tree.type].push(tree)
       }
+    },
+    get trees() {
+      const items: T[] = []
+      Object.keys(innerTreeMap).forEach((treeType) => {
+        const result = innerTreeMap[treeType]
+        items.push(...result)
+      })
+      return items
+    },
+    reset() {
+      innerTreeMap = {}
     },
     getCheckMap(trees: T[]) {
       const checkMap: CheckMap = {}
@@ -119,7 +130,7 @@ export function createTreeMap<T extends BaseTree = BaseTree>(treeLimitNum = 4, r
         }
         rows.forEach((row) => {
           const maxLine = getSameLineTree(row, trees)
-          console.log(treeType, maxLine)
+          // console.log(treeType, maxLine)
           if (maxLine.length >= treeLimitNum) {
             result.push(...maxLine)
           }

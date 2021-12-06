@@ -1,6 +1,7 @@
 import { ease } from 'pixi-ease';
-import { Application, Point, Sprite, Text, TilingSprite } from 'pixi.js';
+import { Application, Graphics, Point, Sprite, Text, TilingSprite } from 'pixi.js';
 
+import { createButton } from './createButton';
 import { createGrid } from './createGrid';
 import { createTreeMap } from './createTreeMap';
 import { waitTime } from './utils';
@@ -10,12 +11,12 @@ type GameStatus = 'play' | 'moving'
 
 export function createMainScene(app: Application) {
   // 一些常量
-  const mapX = 20
-  const mapY = 300
+  const ratio = window.devicePixelRatio || 1
+  const mapX = 20 * ratio
+  const mapY = 300 * ratio
   const mapSize = app.view.width - mapX * 2
   const rowNum = 8
   const blockSize = (mapSize / rowNum) >> 0
-  const ratio = window.devicePixelRatio || 1
 
   // 全局地图
   const map = new Sprite()
@@ -24,20 +25,16 @@ export function createMainScene(app: Application) {
 
   const scoreView = new Text('Score:0', {
     fontSize: 60 * ratio,
-    fill: ['#ffffff', '#00ff00'],
+    fill: 0x333333,
   })
   let totalScore = 0
   scoreView.x = mapX
-  scoreView.y = 100
+  scoreView.y = mapY - 120 * ratio
 
   // 全局网格
-  const grid = createGrid(rowNum, rowNum)
+  let grid = createGrid(rowNum, rowNum)
   const treeMap = createTreeMap<Tree>()
   let gameStatus: GameStatus = 'play'
-  let startX = -1
-  let startY = -1
-  let endX = -1
-  let endY = -1
   let lastTree: Tree | undefined
 
   function createTree(type: TreeType) {
@@ -67,6 +64,10 @@ export function createMainScene(app: Application) {
         view.x = x * blockSize + xDelta
         view.y = y * blockSize + yDelta
         grid.setWalkable(x, y, false)
+      },
+      destroy() {
+        map.removeChild(view)
+        view.removeAllListeners()
       },
       async remove() {
         grid.setWalkable(gridX, gridY)
@@ -107,8 +108,6 @@ export function createMainScene(app: Application) {
         return
       }
       instance.startMove()
-      startX = instance.gridX
-      startY = instance.gridY
       lastTree = instance
     })
     return instance
@@ -163,70 +162,158 @@ export function createMainScene(app: Application) {
       // console.log('removeTrees.length', removeTrees.length)
       for (const tree of removeTrees) {
         await tree.remove()
+        if (tree.type === '2-black' || tree.type === '2-red') {
+          totalScore += 2
+        } else {
+          totalScore += 1
+        }
       }
-      totalScore += removeTrees.length
     }
     scoreView.text = `Score:${totalScore * 10}`
+  }
+
+  function createModal() {
+    const modal = new Sprite()
+    const modalBg = new Graphics()
+    modalBg.beginFill(0x000000, 0.7)
+    modalBg.drawRect(0, 0, app.view.width, app.view.height)
+    modal.addChild(modalBg)
+
+    const resultTitle = new Text('Game Over!', {
+      fontSize: 100 * ratio,
+      fill: 0xf1d619,
+      fontStyle: 'italic',
+      fontWeight: 'bold',
+    })
+
+    resultTitle.y = app.view.height / 2.5
+    resultTitle.x = (app.view.width - resultTitle.width) / 2
+
+    modal.addChild(resultTitle)
+
+    const restartBtn = createButton({
+      text: 'Restart',
+      fontSize: 60 * ratio,
+      width: 300 * ratio,
+      height: 100 * ratio,
+      borderRadius: 20 * ratio,
+    })
+
+    restartBtn.view.x = (app.view.width - 300 * ratio) / 2
+    restartBtn.view.y = resultTitle.y + 200 * ratio
+
+    modal.addChild(restartBtn.view)
+    return {
+      modal,
+      restartBtn,
+    }
+  }
+  const modal = createModal()
+
+  async function gameOver() {
+    app.stage.addChild(modal.modal)
+    modal.restartBtn.view.on('pointertap', () => {
+      modal.restartBtn.view.removeAllListeners()
+      app.stage.removeChild(modal.modal)
+      restart()
+    })
+  }
+  async function restart() {
+    const trees = treeMap.trees
+    trees.forEach((tree) => tree.destroy())
+
+    treeMap.reset()
+    grid = createGrid(rowNum, rowNum)
+    gameStatus = 'play'
+    totalScore = 0
+    scoreView.text = `Score:${totalScore * 10}`
+    randomAddTrees(1, 4)
+  }
+
+  async function moveLastTreeTo(endX: number, endY: number) {
+    if (gameStatus !== 'play' || !lastTree) {
+      return
+    }
+    const startX = lastTree.gridX
+    const startY = lastTree.gridY
+    const steps = grid.findPath({
+      startX,
+      startY,
+      endX,
+      endY,
+    })
+
+    gameStatus = 'moving'
+    if (steps.length === 0) {
+      await lastTree.shake()
+      lastTree.endMove()
+      lastTree = undefined
+      gameStatus = 'play'
+      return
+    }
+    const moveSpeed = Math.min(2400 / steps.length, 300)
+    for (const step of steps) {
+      const [x, y] = step
+      lastTree.moveTo(x, y)
+      await waitTime(moveSpeed)
+    }
+    lastTree.endMove()
+    const trees = [lastTree]
+    lastTree = undefined
+    await checkTrees(trees)
+    await waitTime(300)
+
+    let nextLevel: 1 | 2 = 1
+    let nextGenerateNum = 2
+    if (totalScore > 40) {
+      nextGenerateNum = 3
+    }
+    if (totalScore > 70) {
+      nextLevel = 2
+    }
+    // nextGenerateNum = 20
+    const newTrees = randomAddTrees(nextLevel, nextGenerateNum)
+    await waitTime(600)
+    if (newTrees?.length) {
+      await checkTrees(newTrees)
+    }
+    const walkableNodes = grid.getWalkableNodes()
+    if (walkableNodes.length === 0) {
+      // game over
+      gameOver()
+      return
+    }
+    gameStatus = 'play'
   }
 
   function startGame() {
     const mapBgTexture = app.loader.resources['map']?.texture
     const mapBg = new TilingSprite(mapBgTexture!, rowNum * 52, rowNum * 52)
+    const btn = createButton({
+      text: 'Restart',
+      fontSize: 60 * ratio,
+      width: 300 * ratio,
+      height: 100 * ratio,
+      borderRadius: 20 * ratio,
+    })
+    btn.view.x = app.view.width / 2 - 150 * ratio
+    btn.view.y = mapY + mapSize + 20 * ratio
+
     mapBg.scale.set(blockSize / 52, blockSize / 52)
     mapBg.interactive = true
     map.addChild(mapBg)
+
+    app.stage.addChild(btn.view)
     app.stage.addChild(map)
     app.stage.addChild(scoreView)
 
-    mapBg.on('pointertap', async (e) => {
-      if (gameStatus !== 'play' || !lastTree) {
-        return
-      }
+    btn.view.on('pointertap', restart)
+
+    mapBg.on('pointertap', (e) => {
       const mousePointer = e.data.global as Point
-      endX = ((mousePointer.x - mapX) / blockSize) >> 0
-      endY = ((mousePointer.y - mapY) / blockSize) >> 0
-      console.log('start search path')
-      const steps = grid.findPath({
-        startX,
-        startY,
-        endX,
-        endY,
-      })
-
-      gameStatus = 'moving'
-      if (steps.length === 0) {
-        await lastTree.shake()
-        lastTree.endMove()
-        lastTree = undefined
-        gameStatus = 'play'
-        return
-      }
-      const moveSpeed = Math.min(2400 / steps.length, 300)
-      for (const step of steps) {
-        const [x, y] = step
-        lastTree.moveTo(x, y)
-        await waitTime(moveSpeed)
-      }
-      lastTree.endMove()
-      const trees = [lastTree]
-      lastTree = undefined
-      await checkTrees(trees)
-      await waitTime(300)
-
-      let nextLevel: 1 | 2 = 1
-      let nextGenerateNum = 2
-      if (totalScore > 40) {
-        nextGenerateNum = 3
-      }
-      if (totalScore > 70) {
-        nextLevel = 2
-      }
-      const newTrees = randomAddTrees(nextLevel, nextGenerateNum)
-      await waitTime(600)
-      if (newTrees?.length) {
-        await checkTrees(newTrees)
-      }
-      gameStatus = 'play'
+      const endX = ((mousePointer.x - mapX) / blockSize) >> 0
+      const endY = ((mousePointer.y - mapY) / blockSize) >> 0
+      moveLastTreeTo(endX, endY)
       // console.log('steps', steps)
     })
 

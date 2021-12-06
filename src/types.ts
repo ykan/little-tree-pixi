@@ -7,6 +7,7 @@ export interface Tree {
   moveTo: (x: number, y: number) => void
   shake: () => Promise<void>
   remove: () => Promise<void>
+  destroy: () => void
 
   readonly view: Sprite
   readonly type: TreeType

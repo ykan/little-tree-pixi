@@ -2,6 +2,7 @@ import { ease } from 'pixi-ease';
 import { Application, LoaderResource, Text, TextStyle, utils } from 'pixi.js';
 
 export function createEntryScene(app: Application) {
+  const ratio = window.devicePixelRatio || 1
   const loadAssets = () =>
     new Promise<utils.Dict<LoaderResource>>((resolve) => {
       app.loader.load((_, res) => {
@@ -10,12 +11,10 @@ export function createEntryScene(app: Application) {
     })
 
   const style = new TextStyle({
-    fontSize: 100,
+    fontSize: 100 * ratio,
     fontStyle: 'italic',
     fontWeight: 'bold',
-    fill: ['#ffffff', '#00ff99'], // gradient
-    stroke: '#4a1850',
-    strokeThickness: 5,
+    fill: ['#f2f2f2', '#00ff00'],
     dropShadow: true,
     dropShadowColor: '#000000',
     dropShadowBlur: 4,
@@ -44,6 +43,7 @@ export function createEntryScene(app: Application) {
       startButton.x = (app.view.width - startButton.width) / 2
       startButton.y = (app.view.height - startButton.height) / 2
       startButton.interactive = true
+      startButton.cursor = 'pointer'
       ease.add(
         startButton,
         { alpha: 0.5, y: startButton.y - 10, x: startButton.x + 5 },

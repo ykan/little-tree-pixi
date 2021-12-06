@@ -10,7 +10,7 @@ async function main() {
   const app = new Application({
     width: window.innerWidth * ratio,
     height: window.innerHeight * ratio,
-    backgroundColor: 0x80b70b,
+    backgroundColor: 0xffffff,
   })
   document.body.appendChild(app.view)
   const entryScene = createEntryScene(app)
