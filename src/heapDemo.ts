@@ -125,7 +125,7 @@ async function main() {
   }
 
   async function shiftDown(currentIndex: number) {
-    console.log('shiftDown', currentIndex)
+    // console.log('shiftDown', currentIndex)
     const lastIndex = nodes.length - 1
     // 已经是最后一个节点了
     if (currentIndex === lastIndex) {
@@ -162,7 +162,7 @@ async function main() {
     await shiftDown(rightIndex)
   }
   async function shiftUp(currentIndex: number) {
-    console.log('shiftUp', currentIndex)
+    // console.log('shiftUp', currentIndex)
     const parentIndex = getParentIndex(currentIndex)
     if (parentIndex < 0) {
       return -1
@@ -182,15 +182,25 @@ async function main() {
   async function heapify() {
     let i = nodes.length - 1
     while (i > -1) {
-      console.log('shift up', i)
+      // console.log('shift up', i)
       await shiftUp(i)
       i--
     }
   }
 
-  ;(window as any)._heapify = heapify
-  ;(window as any)._shiftUp = shiftUp
-  ;(window as any)._shiftDownOnce = shiftDown
+  let isRunning = false
+  app.stage.on('pointertap', async () => {
+    if (isRunning) {
+      return
+    }
+    isRunning = true
+    await heapify()
+    isRunning = false
+  })
+
+  // ;(window as any)._heapify = heapify
+  // ;(window as any)._shiftUp = shiftUp
+  // ;(window as any)._shiftDownOnce = shiftDown
 }
 
 main()

@@ -156,11 +156,11 @@ export function createMainScene(app: Application) {
     const checkMap = treeMap.getCheckMap(trees)
     const removeMap = treeMap.check(checkMap)
     const removeTypes = Object.keys(removeMap)
-    console.log(`check trees`, trees.length)
-    console.log(`result`, removeMap)
+    // console.log(`check trees`, trees.length)
+    // console.log(`result`, removeMap)
     for (const removeType of removeTypes) {
       const removeTrees = removeMap[removeType]
-      console.log('removeTrees.length', removeTrees.length)
+      // console.log('removeTrees.length', removeTrees.length)
       for (const tree of removeTrees) {
         await tree.remove()
       }
