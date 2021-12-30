@@ -58,7 +58,7 @@ export function createEntryScene(app: Application) {
       startButton.once('pointertap', next)
 
       app.stage.addChild(startButton)
-      next()
+      // next()
     },
   }
 }
